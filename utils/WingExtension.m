@@ -8,6 +8,9 @@ if fly_apart_error > 0
     return
 end
 
+RATIO = 4.4971;
+MIN_AREA_RATIO = 0.1895;
+
 WE_is_1 = 0;
 WE_is_2 = 0;
 WE_is = [0 0];
@@ -185,13 +188,13 @@ end
 if area_1_upper + area_1_lower ==0
     WE_score_1 = 0;
 else
-    WE_score_1 = (area_1_upper - area_1_lower)/(area_1_upper + area_1_lower);
+    WE_score_1 = max(area_1_upper, area_1_lower)/min(area_1_upper, area_1_lower);
 end
 
 if area_2_upper + area_2_lower ==0
     WE_score_2 = 0;
 else
-    WE_score_2 = (area_2_upper - area_2_lower)/(area_2_upper + area_2_lower);
+    WE_score_2 = max(area_2_upper, area_2_lower)/min(area_2_upper, area_2_lower);
 end
 
 
@@ -199,11 +202,11 @@ end
 if (dist_b1_w1+dist_b2_w2) < (dist_b1_w2 + dist_b2_w1)
     
     
-    if abs(WE_score_1)>0.5 && max(area_1_upper, area_1_lower)>0.2 * max(initial_body_area)
+    if WE_score_1>RATIO && max(area_1_upper, area_1_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_1 = 1;
     end
     
-    if abs(WE_score_2)>0.5 && max(area_2_upper, area_2_lower)>0.2 * max(initial_body_area)
+    if WE_score_2>RATIO && max(area_2_upper, area_2_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_2 = 1;
     end
     
@@ -212,11 +215,11 @@ if (dist_b1_w1+dist_b2_w2) < (dist_b1_w2 + dist_b2_w1)
     
 else
     
-    if abs(WE_score_1)>0.5 && max(area_1_upper, area_1_lower)>0.2 * max(initial_body_area)
+    if WE_score_1>RATIO && max(area_1_upper, area_1_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_2 = 1;
     end
     
-    if abs(WE_score_2)>0.5 && max(area_2_upper, area_2_lower)>0.2 * max(initial_body_area)
+    if WE_score_2>RATIO && max(area_2_upper, area_2_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_1 = 1;
     end
     
