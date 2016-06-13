@@ -334,7 +334,7 @@ showimage;
         thresh_ROIs = L.thresh_ROIs;
         Channel = L.Channel;
         min_body_dist_s = L.min_body_dist_s;
-        distant_wing_area_s = L.distant_wing_area_s
+        distant_wing_area_s = L.distant_wing_area_s;
         
         
         

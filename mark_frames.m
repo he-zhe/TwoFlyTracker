@@ -41,7 +41,14 @@ mark_end_button = [];
 
 mark_start_frame = -1;
 mark_end_frame = -1;
-mark_s = zeros(1, nframes);
+
+if isfield(L, 'mark_s')
+    mark_s = L.mark_s;
+else
+    mark_s = zeros(1, nframes);
+end
+
+
 CreateGUI;
 showimage;
 
@@ -117,6 +124,14 @@ showimage;
             movie = VideoReader(allfiles(mi).name);
             nframes = get(movie,'NumberOfFrames');
             L = load(strcat(allfiles(mi).name(1:end-4),'_crrcted','.','mat'));
+            mark_start_frame = -1;
+            mark_end_frame = -1;
+            
+            if isfield(L, 'mark_s')
+                mark_s = L.mark_s;
+            else
+                mark_s = zeros(1, nframes);
+            end
             
             
             
@@ -134,7 +149,7 @@ showimage;
             titletext = allfiles(mi).name;
             set(moviefigure,'Name',titletext);
             set(framecontrol,'Value',startframe);
-            framecallback            
+            framecallback;            
             showimage;
             disp(allfiles(mi).name),disp('started')
             
@@ -224,6 +239,7 @@ showimage;
             for fm = mark_start_frame:frame
                 mark_s(fm) = 1;
             end
+            showimage;
             fprintf('Frames from %d to %d marked.\n',mark_start_frame, frame);
             mark_start_frame = -1;
             set(mark_start_button,'String','Mark Start','BackgroundColor',[1 1 1]);
@@ -260,6 +276,12 @@ showimage;
             ff = step(fly_stop_insert, ff, strings_stop, int32([80,240]));
         end
         
+        if mark_s(frame) == 1
+            frame_mark_insert = vision.TextInserter('%s', 'LocationSource', 'Input port', 'Color',  [255, 0, 0], 'FontSize', 50);
+            strings_stop = uint8('Marked');
+            ff = step(frame_mark_insert, ff, strings_stop, int32([5,400]));
+        end
+        
         figure(moviefigure), axis image
         imagesc(ff);
         title(frame);
@@ -289,14 +311,14 @@ showimage;
         thresh_ROIs = L.thresh_ROIs;
         Channel = L.Channel;
         min_body_dist_s = L.min_body_dist_s;
+        distant_wing_area_s = L.distant_wing_area_s;
         
         
         
-        
-        save(strcat(filename(1:end-4),'_crrcted','.mat'),'posx','posy','WE',...
+        save(strcat(filename(1:end-4),'_marked','.mat'),'posx','posy','WE',...
             'orientation','MajorAxis','MinorAxis','area','moviefile',...
             'fly_apart_error_s','collisions','ROIs','StartTracking',...
-            'StopTracking','thresh_ROIs','Channel','min_body_dist_s','mark_s');
+            'StopTracking','thresh_ROIs','Channel','min_body_dist_s','distant_wing_area_s','mark_s');
         disp('saved');
     end
 
