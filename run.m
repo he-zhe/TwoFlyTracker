@@ -9,9 +9,25 @@ allfiles_ori = uigetfile('*.mat','MultiSelect','on');
 if ~ischar(allfiles_ori) %Multiple files, class(allfiles_ori) = cell
     allfiles = cell2struct(allfiles_ori,'name');
 else %Single file, class(allfiles_ori) = char
-    allfiles = struct; 
+    allfiles = struct;
     allfiles(1).name = allfiles_ori;
 end
+
+
+prompt = 'Do you want to characterize wing extension behavior(for male and female pair)? Y/N [Y]: ';
+we_or_agg_input = input(prompt,'s');
+if isempty(we_or_agg_input) || we_or_agg_input == 'Y' || we_or_agg_input == 'y'
+    we_or_agg = 'we';
+    fprintf('%s\n', 'In this run, wing extension will be recorded, but not aggression.')
+else
+    prompt = 'Do you want to characterize aggression behavior(for two males)? Y/N [Y]: ';
+    we_or_agg_input = input(prompt,'s');
+    if isempty(we_or_agg_input) || we_or_agg_input == 'Y' || we_or_agg_input == 'y'
+        we_or_agg = 'agg';
+        fprintf('%s\n', 'In this run, aggression will be recorded, but not wing extension.')
+    end
+end
+
 
 for fi =1:length(allfiles)
     
@@ -25,11 +41,11 @@ for fi =1:length(allfiles)
     % Prepare data matrixes-------------Start----------------------------
     posx = NaN(2,nframes);
     posy = NaN(2,nframes);
-   
+    
     orientation = NaN(2,nframes);
     area = NaN(2,nframes);
     MajorAxis = NaN(2,nframes);
-    MinorAxis = NaN(2,nframes); 
+    MinorAxis = NaN(2,nframes);
     WE = NaN(2,nframes);
     distant_wing_area_s = NaN(4,nframes);
     
@@ -44,7 +60,7 @@ for fi =1:length(allfiles)
     % Prepare data matrixes-------------End--------------------------------
     
     
-
+    
     %Get background.
     background = get_background(annotation_file, moviefile, Channel);
     
@@ -59,7 +75,7 @@ for fi =1:length(allfiles)
     
     %Two thresholds are generated. One for body only. The other for
     %body+wings.
-    thresh = multithresh (flies_for_thresh,2); 
+    thresh = multithresh (flies_for_thresh,2);
     %Get Thresh-------------End----------------------------
     
     fprintf('The thresholds for %s are %d and %d.\n'...
@@ -80,17 +96,17 @@ for fi =1:length(allfiles)
             tic
         end
         
-
-
+        
+        
         [fly_body, fly_with_wing, fly_apart_error, collision, min_body_dist] = ...
             fly_apart(rp_body, rp_with_wing, fly_body, fly_with_wing, initial_body_area, initial_wing_area, initial_body_MajorAxisLength, frame);
         
         [distant_wing_area, WE_is] = ...
-            WingExtension(fly_apart_error, fly_body, fly_with_wing, initial_body_area, initial_wing_area, initial_body_MajorAxisLength, initial_body_MinorAxisLength, ROIs, frame);
+            WingExtension(we_or_agg,fly_apart_error, fly_body, fly_with_wing, initial_body_area, initial_wing_area, initial_body_MajorAxisLength, initial_body_MinorAxisLength, ROIs, frame);
         
         [posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s, distant_wing_area_s] =...
             assign_flies(fly_apart_error, fly_apart_error_s, fly_body, fly_with_wing, frame, StartTracking, posx, posy, orientation,area, MajorAxis, MinorAxis, WE, WE_is, collisions, collision, min_body_dist_s, min_body_dist, distant_wing_area, distant_wing_area_s);
-    
+        
         % Every 1000 frames, disp fps & save to file
         if rem(frame,1000)==0
             t = toc;
@@ -102,7 +118,7 @@ for fi =1:length(allfiles)
         
     end
     save(strcat(annotation_file(1:end-8),'trck','.','mat'),'posx','posy','orientation','area','MajorAxis','MinorAxis','WE','collisions','min_body_dist_s','fly_apart_error_s','StartTracking','StopTracking','moviefile','ROIs','thresh_ROIs','Channel','distant_wing_area_s')
-
+    
     clearvars -except allfiles fi;
 end
 

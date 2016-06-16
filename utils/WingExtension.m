@@ -1,10 +1,18 @@
-function [distant_wing_area,WE_is] = WingExtension(fly_apart_error,fly_body, fly_with_wing,  initial_body_area,initial_wing_area,initial_body_MajorAxisLength,initial_body_MinorAxisLength,ROIs,frame)
+function [distant_wing_area,WE_is] = WingExtension(we_or_agg,fly_apart_error,fly_body, fly_with_wing,  initial_body_area,initial_wing_area,initial_body_MajorAxisLength,initial_body_MinorAxisLength,ROIs,frame)
 %WINGEXTENSION Summary of this function goes here
 %   Detailed explanation goes here
 if fly_apart_error > 0
     %disp('fly_apart_error')
     distant_wing_area = [NaN NaN NaN NaN];
     WE_is = [NaN NaN];
+    return
+end
+
+if we_or_agg == 'we'
+    AREA_OF_INTEREST = 1.2;
+elseif we_or_agg == 'agg'
+    AREA_OF_INTEREST = 0.6;
+else
     return
 end
 
@@ -116,8 +124,8 @@ mask_1_lower = zeros(480,640);
 
 
 for x = 1:640
-    y_upper = k1*x+b1+0.6*min(initial_body_MinorAxisLength)/cos1;
-    y_lower = k1*x+b1-0.6*min(initial_body_MinorAxisLength)/cos1;
+    y_upper = k1*x+b1+AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos1;
+    y_lower = k1*x+b1-AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos1;
     
     for y = max(uint16(y_upper),1):480
         mask_1_lower(y,x)=1;
@@ -139,8 +147,8 @@ mask_2_upper = zeros(480,640);
 mask_2_lower = zeros(480,640);
 
 for x = 1:640
-    y_upper = k2*x+b2+0.6*min(initial_body_MinorAxisLength)/cos2;
-    y_lower = k2*x+b2-0.6*min(initial_body_MinorAxisLength)/cos2;
+    y_upper = k2*x+b2+AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos2;
+    y_lower = k2*x+b2-AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos2;
     
     for y = max(uint16(y_upper),1):480
         mask_2_lower(y,x)=1;
