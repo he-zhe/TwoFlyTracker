@@ -35,6 +35,7 @@ parfor fi =1:length(allfiles)
     MajorAxis = NaN(2,nframes);
     MinorAxis = NaN(2,nframes); 
     WE = NaN(2,nframes);
+    distant_wing_area_s = NaN(4,nframes);
     
     collisions = NaN(1,nframes);
     min_body_dist_s = NaN(1,nframes);
@@ -87,26 +88,28 @@ parfor fi =1:length(allfiles)
         end
         
         
+   
+
         [fly_body, fly_with_wing, fly_apart_error, collision, min_body_dist] = ...
             fly_apart(rp_body, rp_with_wing, fly_body, fly_with_wing, initial_body_area, initial_wing_area, initial_body_MajorAxisLength, frame);
         
-        [WE_score, WE_is] = ...
+        [distant_wing_area, WE_is] = ...
             WingExtension(fly_apart_error, fly_body, fly_with_wing, initial_body_area, initial_wing_area, initial_body_MajorAxisLength, initial_body_MinorAxisLength, ROIs, frame);
         
-        [posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s] =...
-            assign_flies(fly_apart_error, fly_apart_error_s, fly_body, fly_with_wing, frame, StartTracking, posx, posy, orientation,area, MajorAxis, MinorAxis, WE, WE_is, collisions, collision, min_body_dist_s, min_body_dist);
+        [posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s, distant_wing_area_s] =...
+            assign_flies(fly_apart_error, fly_apart_error_s, fly_body, fly_with_wing, frame, StartTracking, posx, posy, orientation,area, MajorAxis, MinorAxis, WE, WE_is, collisions, collision, min_body_dist_s, min_body_dist, distant_wing_area, distant_wing_area_s);
     
         % Every 1000 frames, disp fps & save to file
         if rem(frame,1000)==0
             t = toc;
             fps = 1000/t;
             fprintf('frame:%d.  fps: %f.\n',frame,fps);
-            par_save(strcat(annotation_file(1:end-8),'trck','.','mat'), posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s, StartTracking, StopTracking, moviefile, ROIs, thresh_ROIs, Channel);
+            par_save(strcat(annotation_file(1:end-8),'trck','.','mat'), posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s, StartTracking, StopTracking, moviefile, ROIs, thresh_ROIs, Channel,distant_wing_area_s);
             tic
         end
         
     end
-    par_save(strcat(annotation_file(1:end-8),'trck','.','mat'), posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s, StartTracking, StopTracking, moviefile, ROIs, thresh_ROIs, Channel);
+    par_save(strcat(annotation_file(1:end-8),'trck','.','mat'), posx, posy, orientation, area, MajorAxis, MinorAxis, WE, collisions, min_body_dist_s, fly_apart_error_s, StartTracking, StopTracking, moviefile, ROIs, thresh_ROIs, Channel,distant_wing_area_s);
 
     
 end

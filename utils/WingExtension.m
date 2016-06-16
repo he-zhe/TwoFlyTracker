@@ -116,8 +116,8 @@ mask_1_lower = zeros(480,640);
 
 
 for x = 1:640
-    y_upper = k1*x+b1+1.2*min(initial_body_MinorAxisLength)/cos1;
-    y_lower = k1*x+b1-1.2*min(initial_body_MinorAxisLength)/cos1;
+    y_upper = k1*x+b1+0.6*min(initial_body_MinorAxisLength)/cos1;
+    y_lower = k1*x+b1-0.6*min(initial_body_MinorAxisLength)/cos1;
     
     for y = max(uint16(y_upper),1):480
         mask_1_lower(y,x)=1;
@@ -139,8 +139,8 @@ mask_2_upper = zeros(480,640);
 mask_2_lower = zeros(480,640);
 
 for x = 1:640
-    y_upper = k2*x+b2+1.2*min(initial_body_MinorAxisLength)/cos2;
-    y_lower = k2*x+b2-1.2*min(initial_body_MinorAxisLength)/cos2;
+    y_upper = k2*x+b2+0.6*min(initial_body_MinorAxisLength)/cos2;
+    y_lower = k2*x+b2-0.6*min(initial_body_MinorAxisLength)/cos2;
     
     for y = max(uint16(y_upper),1):480
         mask_2_lower(y,x)=1;
@@ -226,6 +226,10 @@ else
     WE_is = [WE_is_1,WE_is_2];
     distant_wing_area = [area_2_upper,area_2_lower,area_1_upper,area_1_lower];
 end
+
+% if frame == 1198
+%     keyboard;
+% end
 
 
 % if too close to the wall, disgard the WE calculation, set to 0

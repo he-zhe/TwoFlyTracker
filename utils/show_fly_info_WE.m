@@ -1,4 +1,4 @@
-function ff = show_fly_ID( movie,frame,posx,posy,WE,min_body_dist_s,speed_s,collisions,ROIs)
+function ff = show_fly_info_WE( movie,frame,posx,posy,WE,min_body_dist_s,speed_s,collisions,ROIs)
 % This function returns a image that has the following annotation:
 % position & gender: marked by "M" & "F"
 % speed: mm/sec

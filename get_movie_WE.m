@@ -29,7 +29,7 @@ for fi =1:length(allfiles)
     
     for frame = StartTracking:StopTracking
         tic
-        J = show_fly_ID( movie,frame,posx,posy,WE,min_body_dist_s,speed_s,collisions,ROIs);
+        J = show_fly_info_WE( movie,frame,posx,posy,WE,min_body_dist_s,speed_s,collisions,ROIs);
 %           if collisions(1,frame)==1 && WE(1,frame)==1
 %              imshow(J);
 %               keyboard
