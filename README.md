@@ -41,5 +41,6 @@ TwoFlyTracker is tested under Windows 7, 8 and 10 using MATLAB R2015a.
     2. Only support 640X480 resolution. More resolutions will be supported before 9/1/2016.
     3. The sensitivity of aggression behaviors detection is only ~95%.
     4. stdout needs to be cleaned.
+    5. Threshold to detect fly missing needs to be optimized.
 ## Credit
 This project was originally based on [Fly Voyeur](http://sg-s.github.io/fly-voyeur/) ([Published in *Neuron*](http://www.sciencedirect.com/science/article/pii/S0896627314006230)).  Most of the code has been re-written to fit the recording protocol.  But the GUI is still heavily inspired by [Fly Voyeur](http://sg-s.github.io/fly-voyeur/).  Please see the beginning comments of each sorce file for details.
