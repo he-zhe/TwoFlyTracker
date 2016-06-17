@@ -8,6 +8,20 @@ else %Single file, class(allfiles_ori) = char
     allfiles(1).name = allfiles_ori;
 end
 
+prompt = 'Do you want to characterize wing extension behavior(for male and female pair)? Y/N [Y]: ';
+we_or_agg_input = input(prompt,'s');
+if isempty(we_or_agg_input) || we_or_agg_input == 'Y' || we_or_agg_input == 'y'
+    we_or_agg = 'we';
+    fprintf('%s\n', 'In this run, wing extension will be recorded, but not aggression.')
+else
+    prompt = 'Do you want to characterize aggression behavior(for two males)? Y/N [Y]: ';
+    we_or_agg_input = input(prompt,'s');
+    if isempty(we_or_agg_input) || we_or_agg_input == 'Y' || we_or_agg_input == 'y'
+        we_or_agg = 'agg';
+        fprintf('%s\n', 'In this run, aggression will be recorded, but not wing extension.')
+    end
+end
+
 parfor fi =1:length(allfiles)
     
     annotation_file = allfiles(fi).name;
