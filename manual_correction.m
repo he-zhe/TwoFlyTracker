@@ -179,6 +179,7 @@ showimage;
         
         movefile(strcat(thisfile(1:end-4),'_anno','.mat'),strcat('cannot-manual-corrected',oss,strcat(thisfile(1:end-4),'_anno','.mat')))
         movefile(strcat(thisfile(1:end-4),'_trck','.mat'),strcat('cannot-manual-corrected',oss,strcat(thisfile(1:end-4),'_trck','.mat')))
+        savetrackdata;
         try
             movefile(strcat(thisfile(1:end-4),'_crrcted','.mat'),strcat('cannot-manual-corrected',oss,strcat(thisfile(1:end-4),'_crrcted','.mat')))
         catch
