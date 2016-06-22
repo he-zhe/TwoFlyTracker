@@ -306,6 +306,12 @@ showimage;
             ff = step(fly_stop_insert, ff, strings_stop, int32([80,240]));
         end
         
+        if L.fly_apart_error_s(1,frame) == 99
+            fly_cop_insert = vision.TextInserter('%s', 'LocationSource', 'Input port', 'Color',  [255, 0, 0], 'FontSize', 50);
+            strings_stop = uint8('Copulated');
+            ff = step(fly_cop_insert, ff, strings_stop, int32([120,240]));
+        end
+        
         figure(moviefigure), axis image
         imagesc(ff);
         title(frame);
