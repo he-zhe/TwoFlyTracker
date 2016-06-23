@@ -1,9 +1,8 @@
 
-%MANUAL_CORRECTION Summary of this function goes here
-%   Detailed explanation goes here
+%MANUAL_CORRECTION Correct possible mistakes by automated tracking
+%   A GUI designed to check tracking result and correct potential mistakes.
+%   Use 'switch' button when male & female are detected inversely.
 function []  = manual_correction()
-
-
 
 allfiles_ori = uigetfile('*.mp4','MultiSelect','on');
 
@@ -13,7 +12,6 @@ else
     allfiles = struct;
     allfiles(1).name = allfiles_ori;
 end
-
 
 
 mi = 1;
@@ -38,13 +36,8 @@ fwd200 = [];
 bckwd200 = [];
 
 
-
-
 CreateGUI;
 showimage;
-
-
-
 
 
     function [] = CreateGUI(eo,ed)
@@ -60,7 +53,7 @@ showimage;
         th(2)=uicontrol(f1,'Position',[320 5 60 20],'Style','text','String','frame #');
         
         
-        switchbutton = uicontrol(f1,'Position',[750 40 120 30],'Style','pushbutton','String','Switch 1&2','Callback',@swithch_fly_callback);
+        switchbutton = uicontrol(f1,'Position',[750 40 120 30],'Style','pushbutton','String','Switch','Callback',@swithch_fly_callback);
         
         cop_button = uicontrol(f1,'Position',[750 10 120 30],'Style','pushbutton','String','Mark Cop','Callback',@cop_callback);
         
@@ -75,7 +68,6 @@ showimage;
         bckwd200 = uicontrol(f1,'Position',[630 10 80 30],'Style','pushbutton','String','<-- 200','Enable','on','Callback',@bckwd200_callback);
         
     end
-
 
 
     function [] = nextcallback(eo,ed)
@@ -114,16 +106,8 @@ showimage;
             movie = VideoReader(allfiles(mi).name);
             nframes = get(movie,'NumberOfFrames');
             L = load(strcat(allfiles(mi).name(1:end-4),'_trck','.','mat'));
-            
-            
-            
-            
             startframe = L.StartTracking;
             frame = startframe; % current frame
-            %             delete(framecontrol)
-            %             framecontrol = uicontrol(f1,'Position',[53 45 600 20],'Style','slider','Value',startframe,'Min',7,'Max',nframes,'SliderStep',[1/nframes 10/nframes],'Callback',@framecallback);
-            
-            
             
             CreateGUI;
             
@@ -142,28 +126,19 @@ showimage;
     function keyPress(eo,ed)
         switch ed.Key
             case 'c'
-                fwd200_callback(fwd200, []);
+                move_frame([],[],200)
             case 'x'
-                bckwd200_callback(bckwd200,[]);
+                move_frame([],[],-200)
             case 'd'
-                frame = frame + 50;
-                set(framecontrol,'Value',frame)
-                framecallback
+                move_frame([],[],50)
             case 's'
-                frame = frame - 50;
-                set(framecontrol,'Value',frame)
-                framecallback
+                move_frame([],[],-50)
             case 'e'
-                frame = frame + 25;
-                set(framecontrol,'Value',frame)
-                framecallback
+                move_frame([],[],25)
             case 'w'
-                frame = frame - 25;
-                set(framecontrol,'Value',frame)
-                framecallback
+                move_frame([],[],-25)
         end
     end
-
 
 
     function [] = cannotanalysecallback(eo,ed)
@@ -175,8 +150,6 @@ showimage;
         % move the movie and mat data to a subfolder cannot-manual-corrected
         thisfile = allfiles(mi).name;
         movefile(thisfile,strcat('cannot-manual-corrected',oss,thisfile))
-        
-        
         movefile(strcat(thisfile(1:end-4),'_anno','.mat'),strcat('cannot-manual-corrected',oss,strcat(thisfile(1:end-4),'_anno','.mat')))
         movefile(strcat(thisfile(1:end-4),'_trck','.mat'),strcat('cannot-manual-corrected',oss,strcat(thisfile(1:end-4),'_trck','.mat')))
         savetrackdata;
@@ -185,9 +158,15 @@ showimage;
         catch
             disp('Correction file has not been generated. Do not need to move.')
         end
+        
+        try
+            delete(strcat(thisfile(1:end-4),'_crrcted','.mat'))
+        catch
+            disp('deleted')
+        end
+        
         nextcallback;
     end
-
 
 
     function [] = framecallback(eo,ed)
@@ -197,45 +176,40 @@ showimage;
     end
 
 
-
-
     function [] = frame2callback(eo,ed)
         frame = ceil(str2double(get(framecontrol2,'String')));
         showimage();
         set(framecontrol,'Value',(frame));
     end
 
+
     function [] = fwd200_callback(eo,ed)
-        frame = frame +200;
-        set(framecontrol,'Value',(frame));
-        framecallback;
-        showimage();
+        move_frame([],[],200)
     end
+
 
     function [] = bckwd200_callback(eo,ed)
-        frame = frame -200;
+        move_frame([],[],-200)
+    end
+
+
+    function [] = move_frame(eo,ed, diff)
+        if frame + diff >=1 && frame + diff <=nframes
+            frame = frame +diff;
+        elseif frame + diff <1
+            frame = 1;
+        elseif frame + diff >nframes
+            frame = nframes;
+        end
         set(framecontrol,'Value',(frame));
         framecallback;
         showimage();
     end
-
-
-
 
 
     function [] = swithch_fly_callback(eo,ed)
-        frame = ceil(str2double(get(framecontrol2,'String')));
-        %keyboard;
-        %         disp(L.posx(1,frame))
-        %         disp(L.posx(2,frame))
-        %
-        
+        frame = ceil(str2double(get(framecontrol2,'String')));    
         L.posx = switch_1_2(L.posx);
-        
-        %         disp(L.posx(1,frame))
-        %         disp(L.posx(2,frame))
-        
-        
         L.posy = switch_1_2(L.posy);
         L.WE = switch_1_2(L.WE);
         L.orientation = switch_1_2(L.orientation);
@@ -244,13 +218,9 @@ showimage;
         L.area = switch_1_2(L.area);
         L.distant_wing_area_s = switch_1_2_3_4(L.distant_wing_area_s);
         
-        
         savetrackdata;
         L = load(strcat(allfiles(mi).name(1:end-4),'_crrcted','.mat'));
         showimage();
-        
-        %keyboard;
-        
     end
 
 
@@ -281,6 +251,7 @@ showimage;
         set(framecontrol,'Value',L.StartTracking)
         framecallback
     end
+
 
     function [] = jump2stop_callback(eo,ed)
         set(framecontrol,'Value',L.StopTracking)
@@ -315,10 +286,8 @@ showimage;
         figure(moviefigure), axis image
         imagesc(ff);
         title(frame);
-        
-        
-        
     end
+
 
     function  [] = savetrackdata(eo,ed)
         filename = allfiles(mi).name;
@@ -343,14 +312,13 @@ showimage;
         min_body_dist_s = L.min_body_dist_s;
         distant_wing_area_s = L.distant_wing_area_s;
         
-        
-        
         save(strcat(filename(1:end-4),'_crrcted','.mat'),'posx','posy','WE',...
             'orientation','MajorAxis','MinorAxis','area','moviefile',...
             'fly_apart_error_s','collisions','ROIs','StartTracking',...
             'StopTracking','thresh_ROIs','Channel','min_body_dist_s','distant_wing_area_s');
         disp('saved');
     end
+
 
     function M_2_by_n = switch_1_2(M_2_by_n)
         for fm = frame:min(L.StopTracking,nframes)
@@ -360,6 +328,7 @@ showimage;
         end
         disp('Swith done')
     end
+
 
     function M_4_by_n = switch_1_2_3_4(M_4_by_n)
         for fm = frame:L.StopTracking
@@ -372,6 +341,7 @@ showimage;
         end
         disp('Swith done')
     end
+
 
 end
 
