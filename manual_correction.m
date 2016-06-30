@@ -15,7 +15,15 @@ end
 
 
 mi = 1;
-L = load(strcat(allfiles(mi).name(1:end-4),'_trck','.','mat'));
+trck_file_name = strcat(allfiles(mi).name(1:end-4),'_trck','.','mat');
+crrcted_file_name = strcat(allfiles(mi).name(1:end-4),'_crrcted','.mat');
+if exist(crrcted_file_name, 'file') == 2
+    L = load(crrcted_file_name);
+    fprintf('%s Loaded\n', crrcted_file_name);
+else
+    L = load(trck_file_name);
+    fprintf('%s Loaded\n', trck_file_name);
+end
 moviefile = L.moviefile;
 movie = VideoReader(moviefile);
 nframes = get(movie,'NumberOfFrames');
@@ -105,7 +113,13 @@ showimage;
             mi = mi+1;
             movie = VideoReader(allfiles(mi).name);
             nframes = get(movie,'NumberOfFrames');
-            L = load(strcat(allfiles(mi).name(1:end-4),'_trck','.','mat'));
+            trck_file_name = strcat(allfiles(mi).name(1:end-4),'_trck','.','mat');
+            crrcted_file_name = strcat(allfiles(mi).name(1:end-4),'_crrcted','.mat');
+            if exist(crrcted_file_name, 'file') == 2
+                L = load(crrcted_file_name);
+            else
+                L = load(trck_file_name);
+            end
             startframe = L.StartTracking;
             frame = startframe; % current frame
             
