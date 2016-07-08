@@ -1,4 +1,4 @@
-function [posx,posy,orientation,area,MajorAxis,MinorAxis,WE,collisions,min_body_dist_s, fly_apart_error_s] = assign_flies(fly_apart_error,fly_apart_error_s, fly_body, fly_with_wings,frame,StartTracking,posx,posy,orientation,area,MajorAxis,MinorAxis, WE, WE_is, collisions, collision,min_body_dist_s,min_body_dist)
+function [posx,posy,orientation,area,MajorAxis,MinorAxis,WE,collisions,min_body_dist_s, fly_apart_error_s,distant_wing_area_s] = assign_flies(fly_apart_error,fly_apart_error_s, fly_body, fly_with_wings,frame,StartTracking,posx,posy,orientation,area,MajorAxis,MinorAxis, WE, WE_is, collisions, collision,min_body_dist_s,min_body_dist,distant_wing_area, distant_wing_area_s)
 %ASSIGN_FLIES Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,6 +10,55 @@ rp_with_wings = regionprops(logical(fly_with_wings),'Orientation','Centroid','Ar
 rp_body = regionprops(logical(fly_body),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
 fly_apart_error_pre = fly_apart_error_s(1,frame-1);
 
+    function assign_normal
+        posx(1,frame) = rp_body(1).Centroid(1);
+        posy(1,frame) = rp_body(1).Centroid(2);
+        orientation(1,frame) = -rp_body(1).Orientation;
+        area(1,frame) = rp_body(1).Area;
+        MajorAxis(1,frame) = rp_body(1).MajorAxisLength;
+        MinorAxis(1,frame) = rp_body(1).MinorAxisLength;
+        WE(1,frame) = WE_is(1);
+        distant_wing_area_s(1, frame) = distant_wing_area(1);
+        distant_wing_area_s(2, frame) = distant_wing_area(2);
+        
+        posx(2,frame) = rp_body(2).Centroid(1);
+        posy(2,frame) = rp_body(2).Centroid(2);
+        orientation(2,frame) = -rp_body(2).Orientation;
+        area(2,frame) = rp_body(2).Area;
+        MajorAxis(2,frame) = rp_body(2).MajorAxisLength;
+        MinorAxis(2,frame) = rp_body(2).MinorAxisLength;
+        WE(2,frame) = WE_is(2);
+        distant_wing_area_s(3, frame) = distant_wing_area(3);
+        distant_wing_area_s(4, frame) = distant_wing_area(4);
+        
+        collisions(frame) = collision;
+        min_body_dist_s(frame) = min_body_dist;
+    end
+
+    function assign_inverse
+        posx(1,frame) = rp_body(2).Centroid(1);
+        posy(1,frame) = rp_body(2).Centroid(2);
+        orientation(1,frame) = -rp_body(2).Orientation;
+        area(1,frame) = rp_body(2).Area;
+        MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+        MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+        WE(1,frame) = WE_is(2);
+        distant_wing_area_s(1, frame) = distant_wing_area(3);
+        distant_wing_area_s(2, frame) = distant_wing_area(4);
+        
+        posx(2,frame) = rp_body(1).Centroid(1);
+        posy(2,frame) = rp_body(1).Centroid(2);
+        orientation(2,frame) = -rp_body(1).Orientation;
+        area(2,frame) = rp_body(1).Area;
+        MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+        MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+        WE(2,frame) = WE_is(1);
+        distant_wing_area_s(3, frame) = distant_wing_area(1);
+        distant_wing_area_s(4, frame) = distant_wing_area(2);
+        
+        collisions(frame) = collision;
+        min_body_dist_s(frame) = min_body_dist;
+    end
 
 % To troubleshooting specific frame
 % if frame == 7975
@@ -30,6 +79,8 @@ if fly_apart_error>1
     MajorAxis(1,frame) = MajorAxis(1,frame-1);
     MinorAxis(1,frame) = MinorAxis(1,frame-1);
     WE(1,frame) = WE_is(1);
+    distant_wing_area_s(1, frame) = distant_wing_area(1);
+    distant_wing_area_s(2, frame) = distant_wing_area(2);
     
     posx(2,frame) = posx(2,frame-1);
     posy(2,frame) = posy(2,frame-1);
@@ -38,6 +89,8 @@ if fly_apart_error>1
     MajorAxis(2,frame) = MajorAxis(2,frame-1);
     MinorAxis(2,frame) = MinorAxis(2,frame-1);
     WE(2,frame) = WE_is(2);
+    distant_wing_area_s(3, frame) = distant_wing_area(3);
+    distant_wing_area_s(4, frame) = distant_wing_area(4);
     
     collisions(frame) = collisions(frame-1);
     min_body_dist_s(frame) = min_body_dist_s(frame-1);
@@ -49,17 +102,22 @@ end
 % If this is the first frame, assign
 if frame == StartTracking
     % special case, first frame. assume everything OK.
-    for i = 1:2  %for loop through flies
-        posx(i,StartTracking) = rp_body(i).Centroid(1);
-        posy(i,StartTracking) = rp_body(i).Centroid(2);
-        orientation(i,StartTracking) = -rp_body(i).Orientation;
-        area(i,StartTracking) = rp_body(i).Area;
-        MajorAxis(i,StartTracking) = rp_body(i).MajorAxisLength;
-        MinorAxis(i,StartTracking) = rp_body(i).MinorAxisLength;
-        WE(i,StartTracking) = WE_is(i);
-    end
-    collisions(StartTracking) = collision;
-    min_body_dist_s(StartTracking) = min_body_dist;
+    assign_normal
+%     for i = 1:2  %for loop through flies
+%         posx(i,StartTracking) = rp_body(i).Centroid(1);
+%         posy(i,StartTracking) = rp_body(i).Centroid(2);
+%         orientation(i,StartTracking) = -rp_body(i).Orientation;
+%         area(i,StartTracking) = rp_body(i).Area;
+%         MajorAxis(i,StartTracking) = rp_body(i).MajorAxisLength;
+%         MinorAxis(i,StartTracking) = rp_body(i).MinorAxisLength;
+%         WE(i,StartTracking) = WE_is(i);
+%     end
+%     distant_wing_area_s(1, frame) = distant_wing_area(1);
+%     distant_wing_area_s(2, frame) = distant_wing_area(2);
+%     distant_wing_area_s(3, frame) = distant_wing_area(3);
+%     distant_wing_area_s(4, frame) = distant_wing_area(4);
+%     collisions(StartTracking) = collision;
+%     min_body_dist_s(StartTracking) = min_body_dist;
 end
 
 
@@ -135,34 +193,44 @@ elseif fly_apart_error == 0 && fly_apart_error_pre ==1 %No fly missing in this f
         distance_current2_pre1 = pdist(pos_current2_1,'euclidean');
         
         if distance_current1_pre1 <= distance_current2_pre1 %current 1 is closer to pre_1, assign 1 to 1, 2 to 2
-            for i = 1:2  %for loop through flies
-                posx(i,frame) = rp_body(i).Centroid(1);
-                posy(i,frame) = rp_body(i).Centroid(2);
-                orientation(i,frame) = -rp_body(i).Orientation;
-                area(i,frame) = rp_body(i).Area;
-                MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
-                MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
-                WE(i,frame) = WE_is(i);
-            end
+            assign_normal
+%             for i = 1:2  %for loop through flies
+%                 posx(i,frame) = rp_body(i).Centroid(1);
+%                 posy(i,frame) = rp_body(i).Centroid(2);
+%                 orientation(i,frame) = -rp_body(i).Orientation;
+%                 area(i,frame) = rp_body(i).Area;
+%                 MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
+%                 MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
+%                 WE(i,frame) = WE_is(i);
+%             end
+%             distant_wing_area_s(1, frame) = distant_wing_area(1);
+%             distant_wing_area_s(2, frame) = distant_wing_area(2);
+%             distant_wing_area_s(3, frame) = distant_wing_area(3);
+%             distant_wing_area_s(4, frame) = distant_wing_area(4);
         elseif distance_current1_pre1 >= distance_current2_pre1
-            posx(1,frame) = rp_body(2).Centroid(1);
-            posy(1,frame) = rp_body(2).Centroid(2);
-            orientation(1,frame) = -rp_body(2).Orientation;
-            area(1,frame) = rp_body(2).Area;
-            MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
-            MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
-            WE(1,frame) = WE_is(2);
-            
-            posx(2,frame) = rp_body(1).Centroid(1);
-            posy(2,frame) = rp_body(1).Centroid(2);
-            orientation(2,frame) = -rp_body(1).Orientation;
-            area(2,frame) = rp_body(1).Area;
-            MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
-            MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
-            WE(2,frame) = WE_is(1);
-            
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_inverse
+%             posx(1,frame) = rp_body(2).Centroid(1);
+%             posy(1,frame) = rp_body(2).Centroid(2);
+%             orientation(1,frame) = -rp_body(2).Orientation;
+%             area(1,frame) = rp_body(2).Area;
+%             MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+%             MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+%             WE(1,frame) = WE_is(2);
+%             
+%             posx(2,frame) = rp_body(1).Centroid(1);
+%             posy(2,frame) = rp_body(1).Centroid(2);
+%             orientation(2,frame) = -rp_body(1).Orientation;
+%             area(2,frame) = rp_body(1).Area;
+%             MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+%             MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+%             WE(2,frame) = WE_is(1);
+%             distant_wing_area_s(1, frame) = distant_wing_area(3);
+%             distant_wing_area_s(2, frame) = distant_wing_area(4);
+%             distant_wing_area_s(3, frame) = distant_wing_area(1);
+%             distant_wing_area_s(4, frame) = distant_wing_area(2);
+%             
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
         end
         
         
@@ -181,33 +249,45 @@ elseif fly_apart_error == 0 && fly_apart_error_pre ==1 %No fly missing in this f
         distance_current2_pre2 = pdist(pos_current2_2,'euclidean');
         
         if distance_current1_pre2 >= distance_current2_pre2 %current 2 is closer to pre_2, assign 1 to 1
-            for i = 1:2  %for loop through flies
-                posx(i,frame) = rp_body(i).Centroid(1);
-                posy(i,frame) = rp_body(i).Centroid(2);
-                orientation(i,frame) = -rp_body(i).Orientation;
-                area(i,frame) = rp_body(i).Area;
-                MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
-                MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
-                WE(i,frame) = WE_is(i);
-            end
+            assign_normal
+%             for i = 1:2  %for loop through flies
+%                 posx(i,frame) = rp_body(i).Centroid(1);
+%                 posy(i,frame) = rp_body(i).Centroid(2);
+%                 orientation(i,frame) = -rp_body(i).Orientation;
+%                 area(i,frame) = rp_body(i).Area;
+%                 MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
+%                 MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
+%                 WE(i,frame) = WE_is(i);
+%                 
+%             end
+%             distant_wing_area_s(1, frame) = distant_wing_area(1);
+%             distant_wing_area_s(2, frame) = distant_wing_area(2);
+%             distant_wing_area_s(3, frame) = distant_wing_area(3);
+%             distant_wing_area_s(4, frame) = distant_wing_area(4);
         elseif distance_current1_pre2 < distance_current2_pre2
-            posx(1,frame) = rp_body(2).Centroid(1);
-            posy(1,frame) = rp_body(2).Centroid(2);
-            orientation(1,frame) = -rp_body(2).Orientation;
-            area(1,frame) = rp_body(2).Area;
-            MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
-            MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
-            WE(1,frame) = WE_is(2);
-            
-            posx(2,frame) = rp_body(1).Centroid(1);
-            posy(2,frame) = rp_body(1).Centroid(2);
-            orientation(2,frame) = -rp_body(1).Orientation;
-            area(2,frame) = rp_body(1).Area;
-            MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
-            MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
-            WE(2,frame) = WE_is(1);
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_inverse
+%             posx(1,frame) = rp_body(2).Centroid(1);
+%             posy(1,frame) = rp_body(2).Centroid(2);
+%             orientation(1,frame) = -rp_body(2).Orientation;
+%             area(1,frame) = rp_body(2).Area;
+%             MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+%             MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+%             WE(1,frame) = WE_is(2);
+%             distant_wing_area_s(1, frame) = distant_wing_area(3);
+%             distant_wing_area_s(2, frame) = distant_wing_area(4);
+%             
+%             posx(2,frame) = rp_body(1).Centroid(1);
+%             posy(2,frame) = rp_body(1).Centroid(2);
+%             orientation(2,frame) = -rp_body(1).Orientation;
+%             area(2,frame) = rp_body(1).Area;
+%             MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+%             MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+%             WE(2,frame) = WE_is(1);
+% 
+%             distant_wing_area_s(3, frame) = distant_wing_area(1);
+%             distant_wing_area_s(4, frame) = distant_wing_area(2);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
         else
             disp('unexpected in one fly missing in this frame (%d) and previous frame(%d).', frame,(frame-1));
             beep
@@ -242,141 +322,171 @@ elseif fly_apart_error == 0 && fly_apart_error_pre ==0 %No fly missing in this f
     %if no jump
     if (distance_a_1<=jump || distance_a_2<=jump) && (distance_b_1<=jump || distance_b_2<=jump)
         if (distance_a_1 + distance_b_2) <= (distance_b_1 + distance_a_2)
-            for i = 1:2  %for loop through flies
-                posx(i,frame) = rp_body(i).Centroid(1);
-                posy(i,frame) = rp_body(i).Centroid(2);
-                orientation(i,frame) = -rp_body(i).Orientation;
-                area(i,frame) = rp_body(i).Area;
-                MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
-                MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
-                WE(i,frame) = WE_is(i);
-            end
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
-            
+            assign_normal
+%             for i = 1:2  %for loop through flies
+%                 posx(i,frame) = rp_body(i).Centroid(1);
+%                 posy(i,frame) = rp_body(i).Centroid(2);
+%                 orientation(i,frame) = -rp_body(i).Orientation;
+%                 area(i,frame) = rp_body(i).Area;
+%                 MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
+%                 MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
+%                 WE(i,frame) = WE_is(i);
+%             end
+%             distant_wing_area_s(1, frame) = distant_wing_area(1);
+%             distant_wing_area_s(2, frame) = distant_wing_area(2);
+%             distant_wing_area_s(3, frame) = distant_wing_area(3);
+%             distant_wing_area_s(4, frame) = distant_wing_area(4);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
+%             
         elseif (distance_a_2 + distance_b_1) <= (distance_a_1 + distance_b_2)
-            posx(1,frame) = rp_body(2).Centroid(1);
-            posy(1,frame) = rp_body(2).Centroid(2);
-            orientation(1,frame) = -rp_body(2).Orientation;
-            area(1,frame) = rp_body(2).Area;
-            MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
-            MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
-            WE(1,frame) = WE_is(2);
-            
-            posx(2,frame) = rp_body(1).Centroid(1);
-            posy(2,frame) = rp_body(1).Centroid(2);
-            orientation(2,frame) = -rp_body(1).Orientation;
-            area(2,frame) = rp_body(1).Area;
-            MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
-            MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
-            WE(2,frame) = WE_is(1);
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_inverse
+%             posx(1,frame) = rp_body(2).Centroid(1);
+%             posy(1,frame) = rp_body(2).Centroid(2);
+%             orientation(1,frame) = -rp_body(2).Orientation;
+%             area(1,frame) = rp_body(2).Area;
+%             MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+%             MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+%             WE(1,frame) = WE_is(2);
+%             
+%             distant_wing_area_s(1, frame) = distant_wing_area(3);
+%             distant_wing_area_s(2, frame) = distant_wing_area(4);
+% 
+%             
+%             posx(2,frame) = rp_body(1).Centroid(1);
+%             posy(2,frame) = rp_body(1).Centroid(2);
+%             orientation(2,frame) = -rp_body(1).Orientation;
+%             area(2,frame) = rp_body(1).Area;
+%             MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+%             MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+%             WE(2,frame) = WE_is(1);
+%             distant_wing_area_s(3, frame) = distant_wing_area(1);
+%             distant_wing_area_s(4, frame) = distant_wing_area(2);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
         end
         
         
         % fly_1 jump, fly_2 not
     elseif (distance_a_1>=jump && distance_a_2>=jump) && (distance_b_1<=jump || distance_b_2<=jump)
         if distance_b_2 <= distance_b_1
-            for i = 1:2  %for loop through flies
-                posx(i,frame) = rp_body(i).Centroid(1);
-                posy(i,frame) = rp_body(i).Centroid(2);
-                orientation(i,frame) = -rp_body(i).Orientation;
-                area(i,frame) = rp_body(i).Area;
-                MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
-                MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
-                WE(i,frame) = WE_is(i);
-            end
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_normal
+%             for i = 1:2  %for loop through flies
+%                 posx(i,frame) = rp_body(i).Centroid(1);
+%                 posy(i,frame) = rp_body(i).Centroid(2);
+%                 orientation(i,frame) = -rp_body(i).Orientation;
+%                 area(i,frame) = rp_body(i).Area;
+%                 MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
+%                 MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
+%                 WE(i,frame) = WE_is(i);
+%             end
+%             distant_wing_area_s(1, frame) = distant_wing_area(1);
+%             distant_wing_area_s(2, frame) = distant_wing_area(2);
+%             distant_wing_area_s(3, frame) = distant_wing_area(3);
+%             distant_wing_area_s(4, frame) = distant_wing_area(4);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
             
         elseif distance_b_1 <= distance_b_2
-            posx(1,frame) = rp_body(2).Centroid(1);
-            posy(1,frame) = rp_body(2).Centroid(2);
-            orientation(1,frame) = -rp_body(2).Orientation;
-            area(1,frame) = rp_body(2).Area;
-            MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
-            MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
-            WE(1,frame) = WE_is(2);
-            
-            posx(2,frame) = rp_body(1).Centroid(1);
-            posy(2,frame) = rp_body(1).Centroid(2);
-            orientation(2,frame) = -rp_body(1).Orientation;
-            area(2,frame) = rp_body(1).Area;
-            MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
-            MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
-            WE(2,frame) = WE_is(1);
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_inverse
+%             posx(1,frame) = rp_body(2).Centroid(1);
+%             posy(1,frame) = rp_body(2).Centroid(2);
+%             orientation(1,frame) = -rp_body(2).Orientation;
+%             area(1,frame) = rp_body(2).Area;
+%             MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+%             MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+%             WE(1,frame) = WE_is(2);
+%             distant_wing_area_s(1, frame) = distant_wing_area(3);
+%             distant_wing_area_s(2, frame) = distant_wing_area(4);
+%             
+%             posx(2,frame) = rp_body(1).Centroid(1);
+%             posy(2,frame) = rp_body(1).Centroid(2);
+%             orientation(2,frame) = -rp_body(1).Orientation;
+%             area(2,frame) = rp_body(1).Area;
+%             MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+%             MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+%             WE(2,frame) = WE_is(1);
+%             distant_wing_area_s(3, frame) = distant_wing_area(1);
+%             distant_wing_area_s(4, frame) = distant_wing_area(2);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
         end
         
         % fly_2 jump, fly_1 not
     elseif (distance_a_1<=jump || distance_a_2<=jump) && (distance_b_1>=jump && distance_b_2>=jump)
         if distance_a_1 <= distance_a_2
-            for i = 1:2  %for loop through flies
-                posx(i,frame) = rp_body(i).Centroid(1);
-                posy(i,frame) = rp_body(i).Centroid(2);
-                orientation(i,frame) = -rp_body(i).Orientation;
-                area(i,frame) = rp_body(i).Area;
-                MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
-                MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
-                WE(i,frame) = WE_is(i);
-            end
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_normal
+%             for i = 1:2  %for loop through flies
+%                 posx(i,frame) = rp_body(i).Centroid(1);
+%                 posy(i,frame) = rp_body(i).Centroid(2);
+%                 orientation(i,frame) = -rp_body(i).Orientation;
+%                 area(i,frame) = rp_body(i).Area;
+%                 MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
+%                 MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
+%                 WE(i,frame) = WE_is(i);
+%             end
+%             distant_wing_area_s(1, frame) = distant_wing_area(1);
+%             distant_wing_area_s(2, frame) = distant_wing_area(2);
+%             distant_wing_area_s(3, frame) = distant_wing_area(3);
+%             distant_wing_area_s(4, frame) = distant_wing_area(4);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
             
         elseif distance_a_2 <= distance_a_1
-            posx(1,frame) = rp_body(2).Centroid(1);
-            posy(1,frame) = rp_body(2).Centroid(2);
-            orientation(1,frame) = -rp_body(2).Orientation;
-            area(1,frame) = rp_body(2).Area;
-            MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
-            MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
-            WE(1,frame) = WE_is(2);
-            
-            posx(2,frame) = rp_body(1).Centroid(1);
-            posy(2,frame) = rp_body(1).Centroid(2);
-            orientation(2,frame) = -rp_body(1).Orientation;
-            area(2,frame) = rp_body(1).Area;
-            MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
-            MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
-            WE(2,frame) = WE_is(1);
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_inverse
+%             posx(1,frame) = rp_body(2).Centroid(1);
+%             posy(1,frame) = rp_body(2).Centroid(2);
+%             orientation(1,frame) = -rp_body(2).Orientation;
+%             area(1,frame) = rp_body(2).Area;
+%             MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+%             MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+%             WE(1,frame) = WE_is(2);
+%             
+%             posx(2,frame) = rp_body(1).Centroid(1);
+%             posy(2,frame) = rp_body(1).Centroid(2);
+%             orientation(2,frame) = -rp_body(1).Orientation;
+%             area(2,frame) = rp_body(1).Area;
+%             MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+%             MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+%             WE(2,frame) = WE_is(1);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
         end
     elseif (distance_a_1>=jump && distance_a_2>=jump) && (distance_b_1>=jump && distance_b_2>=jump)
         fprintf('Both flies jumped in frame %d.\n',frame)
         if (distance_a_1 + distance_b_2) <= (distance_b_1 + distance_a_2)
-            for i = 1:2  %for loop through flies
-                posx(i,frame) = rp_body(i).Centroid(1);
-                posy(i,frame) = rp_body(i).Centroid(2);
-                orientation(i,frame) = -rp_body(i).Orientation;
-                area(i,frame) = rp_body(i).Area;
-                MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
-                MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
-                WE(i,frame) = WE_is(i);
-            end
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_normal
+%             for i = 1:2  %for loop through flies
+%                 posx(i,frame) = rp_body(i).Centroid(1);
+%                 posy(i,frame) = rp_body(i).Centroid(2);
+%                 orientation(i,frame) = -rp_body(i).Orientation;
+%                 area(i,frame) = rp_body(i).Area;
+%                 MajorAxis(i,frame) = rp_body(i).MajorAxisLength;
+%                 MinorAxis(i,frame) = rp_body(i).MinorAxisLength;
+%                 WE(i,frame) = WE_is(i);
+%             end
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
             
         elseif (distance_a_2 + distance_b_1) <= (distance_a_1 + distance_b_2)
-            posx(1,frame) = rp_body(2).Centroid(1);
-            posy(1,frame) = rp_body(2).Centroid(2);
-            orientation(1,frame) = -rp_body(2).Orientation;
-            area(1,frame) = rp_body(2).Area;
-            MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
-            MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
-            WE(1,frame) = WE_is(2);
-            
-            posx(2,frame) = rp_body(1).Centroid(1);
-            posy(2,frame) = rp_body(1).Centroid(2);
-            orientation(2,frame) = -rp_body(1).Orientation;
-            area(2,frame) = rp_body(1).Area;
-            MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
-            MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
-            WE(2,frame) = WE_is(1);
-            collisions(frame) = collision;
-            min_body_dist_s(frame) = min_body_dist;
+            assign_inverse
+%             posx(1,frame) = rp_body(2).Centroid(1);
+%             posy(1,frame) = rp_body(2).Centroid(2);
+%             orientation(1,frame) = -rp_body(2).Orientation;
+%             area(1,frame) = rp_body(2).Area;
+%             MajorAxis(1,frame) = rp_body(2).MajorAxisLength;
+%             MinorAxis(1,frame) = rp_body(2).MinorAxisLength;
+%             WE(1,frame) = WE_is(2);
+%             
+%             posx(2,frame) = rp_body(1).Centroid(1);
+%             posy(2,frame) = rp_body(1).Centroid(2);
+%             orientation(2,frame) = -rp_body(1).Orientation;
+%             area(2,frame) = rp_body(1).Area;
+%             MajorAxis(2,frame) = rp_body(1).MajorAxisLength;
+%             MinorAxis(2,frame) = rp_body(1).MinorAxisLength;
+%             WE(2,frame) = WE_is(1);
+%             collisions(frame) = collision;
+%             min_body_dist_s(frame) = min_body_dist;
         end
     end
     
@@ -411,8 +521,6 @@ if isnan(posx(1,frame)) && isnan(posx(2,frame))
     disp('In frame'),disp(frame),disp('both cordination is lost.')
     %beep
     %keyboard
-    %%%%% Add here some difficulty, if concecutive difficulty > 10 frames,
-    %%%%% try to use human eye
     
 end
 

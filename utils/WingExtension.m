@@ -1,12 +1,23 @@
-function [WE_score,WE_is] = WingExtension(fly_apart_error,fly_body, fly_with_wing,  initial_body_area,initial_wing_area,initial_body_MajorAxisLength,initial_body_MinorAxisLength,ROIs,frame)
+function [distant_wing_area,WE_is] = WingExtension(we_or_agg,fly_apart_error,fly_body, fly_with_wing,  initial_body_area,initial_wing_area,initial_body_MajorAxisLength,initial_body_MinorAxisLength,ROIs,frame)
 %WINGEXTENSION Summary of this function goes here
 %   Detailed explanation goes here
 if fly_apart_error > 0
     %disp('fly_apart_error')
-    WE_score = [NaN NaN];
+    distant_wing_area = [NaN NaN NaN NaN];
     WE_is = [NaN NaN];
     return
 end
+
+if we_or_agg == 'we'
+    AREA_OF_INTEREST = 1.2;
+elseif we_or_agg == 'agg'
+    AREA_OF_INTEREST = 0.6;
+else
+    return
+end
+
+RATIO = 4.4971;
+MIN_AREA_RATIO = 0.1895;
 
 WE_is_1 = 0;
 WE_is_2 = 0;
@@ -99,20 +110,22 @@ if length(rp_body)==2 && length(rp_with_wings) == 2
     end
 else
     fprintf('body~=2 or wings~=2 in frame %d',frame)
-    WE_score = [NaN NaN];
-    %keyboard
+    distant_wing_area = [NaN NaN];
     return
 end
 
 
+
+% Create a mask that can remove all pixles within 1.2*MinorAxisLength of
+% major axis (If no wing extension, all area will be removed)
 
 mask_1_upper = zeros(480,640);
 mask_1_lower = zeros(480,640);
 
 
 for x = 1:640
-    y_upper = k1*x+b1+1.2*min(initial_body_MinorAxisLength)/cos1;
-    y_lower = k1*x+b1-1.2*min(initial_body_MinorAxisLength)/cos1;
+    y_upper = k1*x+b1+AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos1;
+    y_lower = k1*x+b1-AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos1;
     
     for y = max(uint16(y_upper),1):480
         mask_1_lower(y,x)=1;
@@ -134,8 +147,8 @@ mask_2_upper = zeros(480,640);
 mask_2_lower = zeros(480,640);
 
 for x = 1:640
-    y_upper = k2*x+b2+1.2*min(initial_body_MinorAxisLength)/cos2;
-    y_lower = k2*x+b2-1.2*min(initial_body_MinorAxisLength)/cos2;
+    y_upper = k2*x+b2+AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos2;
+    y_lower = k2*x+b2-AREA_OF_INTEREST*min(initial_body_MinorAxisLength)/cos2;
     
     for y = max(uint16(y_upper),1):480
         mask_2_lower(y,x)=1;
@@ -152,7 +165,6 @@ fly_2_lower = fly_2_with_wings & mask_2_lower;
 rp_2_lower= regionprops(fly_2_lower,'Area');
 
 %
-
 %
 %
 
@@ -184,44 +196,48 @@ end
 if area_1_upper + area_1_lower ==0
     WE_score_1 = 0;
 else
-    WE_score_1 = (area_1_upper - area_1_lower)/(area_1_upper + area_1_lower);
+    WE_score_1 = max(area_1_upper, area_1_lower)/min(area_1_upper, area_1_lower);
 end
 
 if area_2_upper + area_2_lower ==0
     WE_score_2 = 0;
 else
-    WE_score_2 = (area_2_upper - area_2_lower)/(area_2_upper + area_2_lower);
+    WE_score_2 = max(area_2_upper, area_2_lower)/min(area_2_upper, area_2_lower);
 end
 
 
 
 if (dist_b1_w1+dist_b2_w2) < (dist_b1_w2 + dist_b2_w1)
-    WE_score = [WE_score_1,WE_score_2];
     
-    if abs(WE_score_1)>0.5 && max(area_1_upper, area_1_lower)>0.2 * max(initial_body_area)
+    
+    if WE_score_1>RATIO && max(area_1_upper, area_1_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_1 = 1;
     end
     
-    if abs(WE_score_2)>0.5 && max(area_2_upper, area_2_lower)>0.2 * max(initial_body_area)
+    if WE_score_2>RATIO && max(area_2_upper, area_2_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_2 = 1;
     end
     
     WE_is = [WE_is_1,WE_is_2];
-    
+    distant_wing_area = [area_1_upper,area_1_lower,area_2_upper,area_2_lower];
     
 else
-    WE_score = [WE_score_2,WE_score_1];
     
-    if abs(WE_score_1)>0.2 && max(area_1_upper, area_1_lower)>0.2 * max(initial_body_area)
+    if WE_score_1>RATIO && max(area_1_upper, area_1_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_2 = 1;
     end
     
-    if abs(WE_score_2)>0.2 && max(area_2_upper, area_2_lower)>0.2 * max(initial_body_area)
+    if WE_score_2>RATIO && max(area_2_upper, area_2_lower)>MIN_AREA_RATIO * mean(initial_body_area)
         WE_is_1 = 1;
     end
     
     WE_is = [WE_is_1,WE_is_2];
+    distant_wing_area = [area_2_upper,area_2_lower,area_1_upper,area_1_lower];
 end
+
+% if frame == 1198
+%     keyboard;
+% end
 
 
 % if too close to the wall, disgard the WE calculation, set to 0
@@ -250,73 +266,5 @@ elseif length(rp_body)==1
 end
 
 
-
-
-
-
-% if WE_is(2) == 1 || WE_is(1) == 1
-%     imshow(flies_with_wings);
-%     
-%     beep;
-%     keyboard;
-% end
 end
-
-
-
-% % Get upper and lower half of the fly (divided by major axis). ---end
-% 
-% 
-% % Calculate Asymmetry
-% % Get the bboundary of the half fly, calculate the distance between each point and normalized major axis vector
-% 
-% if any(any(fly_1_upper))
-%     dist_1_upper = bd2line_dist( fly_1_upper, x1y1_body, x1ay1a_body);
-%     dist_1_upper_top20_mean = mean(dist_1_upper(1:min(20,size(dist_1_upper))));
-% end
-% 
-% if any(any(fly_1_lower))
-%     dist_1_lower = bd2line_dist( fly_1_lower, x1y1_body, x1ay1a_body);
-%     dist_1_lower_top20_mean = mean(dist_1_lower(1:min(20,size(dist_1_lower))));
-% end
-% 
-% if any(any(fly_2_upper))
-%     dist_2_upper = bd2line_dist( fly_2_upper, x2y2_body, x2ay2a_body);
-%     dist_2_upper_top20_mean = mean(dist_2_upper(1:min(20,size(dist_2_upper))));
-% end
-% 
-% if any(any(fly_2_lower))
-%     dist_2_lower = bd2line_dist( fly_2_lower, x2y2_body, x2ay2a_body);
-%     dist_2_lower_top20_mean = mean(dist_2_lower(1:min(20,size(dist_2_lower))));
-% end
-
-    % Get mask for each fly to seperate them --- Start
-%     mask_fly_1 = zeros(480,640);
-%     mask_fly_2 = zeros(480,640);
-%     
-%     bbx1_UL = rp_with_wings(1).BoundingBox(1);
-%     bby1_UL = rp_with_wings(1).BoundingBox(2);
-%     bbx1_LR = rp_with_wings(1).BoundingBox(1)+rp_with_wings(1).BoundingBox(3);
-%     bby1_LR = rp_with_wings(1).BoundingBox(2)+rp_with_wings(1).BoundingBox(4);
-%     
-%     bbx2_UL = rp_with_wings(2).BoundingBox(1);
-%     bby2_UL = rp_with_wings(2).BoundingBox(2);
-%     bbx2_LR = rp_with_wings(2).BoundingBox(1)+rp_with_wings(2).BoundingBox(3);
-%     bby2_LR = rp_with_wings(2).BoundingBox(2)+rp_with_wings(2).BoundingBox(4);
-%     
-%     
-%     for x = uint16(bbx1_UL-1):uint16(bbx1_LR+1)
-%         for y = uint16(bby1_UL-1):uint16(bby1_LR+1)
-%             mask_fly_1(y,x)=1; %Note: the x,y is revesed in matrix, compare to a image
-%         end
-%     end
-%     
-%     for x = uint16(bbx2_UL-1):uint16(bbx2_LR+1)
-%         for y = uint16(bby2_UL-1):uint16(bby2_LR+1)
-%             mask_fly_2(y,x)=1;
-%         end
-%     end
-%     
-%     fly_1_with_wings = flies_with_wings.*mask_fly_1;
-%     fly_2_with_wings = flies_with_wings.*mask_fly_2;
 
