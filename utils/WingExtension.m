@@ -8,9 +8,9 @@ if fly_apart_error > 0
     return
 end
 
-if we_or_agg == 'we'
+if strcmp(we_or_agg,'we')
     AREA_OF_INTEREST = 1.2;
-elseif we_or_agg == 'agg'
+elseif strcmp(we_or_agg, 'agg')
     AREA_OF_INTEREST = 0.6;
 else
     return

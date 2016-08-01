@@ -8,7 +8,12 @@ jump = 40;
 
 rp_with_wings = regionprops(logical(fly_with_wings),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
 rp_body = regionprops(logical(fly_body),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
-fly_apart_error_pre = fly_apart_error_s(1,frame-1);
+
+if frame >1
+    fly_apart_error_pre = fly_apart_error_s(1,frame-1);
+else
+    fly_apart_error_pre = 0;
+end
 
     function assign_normal
         posx(1,frame) = rp_body(1).Centroid(1);
@@ -118,6 +123,7 @@ if frame == StartTracking
 %     distant_wing_area_s(4, frame) = distant_wing_area(4);
 %     collisions(StartTracking) = collision;
 %     min_body_dist_s(StartTracking) = min_body_dist;
+    return
 end
 
 
