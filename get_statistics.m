@@ -10,7 +10,7 @@ else
     allfiles(1).name = allfiles_ori;
 end
 
-result_database={'File','Male_Mean_Speed','Female_Mean_speed','Mean_body_dist','# of Collisions','# of WE', 'First WE', 'is_Cop', 'First Cop', 'Total Time', '#agg'};
+result_database={'File','Male_Mean_Speed','Female_Mean_speed','Mean_body_dist','# of Collisions','# of WE', 'First WE', 'is_Cop', 'First Cop', 'Total Time', '#agg','first_agg'};
 
 for fi =1:length(allfiles)
     
@@ -82,9 +82,16 @@ for fi =1:length(allfiles)
     total_time = (StopTracking - StartTracking)/fps;
     
     % keyboard;
-    e_agg =0;
+    n_agg =0;
+    first_agg = -1;
     if exist('agg_s', 'var') == 1   
         n_agg = sum(agg_s);
+        
+        first_agg_index = find(agg_s, 1);
+        if ~isempty(first_agg_index)
+            first_agg = (first_agg_index - StartTracking)/fps;
+        
+        end
     end
     
     sz = size(result_database);
@@ -101,6 +108,7 @@ for fi =1:length(allfiles)
     result_database{addhere,9} = first_cop;
     result_database{addhere,10} = total_time;
     result_database{addhere,11} = n_agg;
+    result_database{addhere,12} = first_agg;
     disp(allfiles(fi).name),disp('finished')
     
     clearvars -except allfiles fi result_database;
