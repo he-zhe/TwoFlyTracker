@@ -119,7 +119,7 @@ for fi =1:length(allfiles)
     end
     save(strcat(annotation_file(1:end-8),'trck','.','mat'),'posx','posy','orientation','area','MajorAxis','MinorAxis','WE','collisions','min_body_dist_s','fly_apart_error_s','StartTracking','StopTracking','moviefile','ROIs','thresh_ROIs','Channel','distant_wing_area_s')
     
-    clearvars -except allfiles fi;
+    clearvars -except allfiles fi we_or_agg;
 end
 
 %Finshed, send a email to myself
