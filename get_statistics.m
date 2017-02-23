@@ -56,8 +56,9 @@ for fi =1:length(allfiles)
     collisions_summary = size(collisions_ons);
     collisions_summary = collisions_summary(1);
     
-    
-    WE_s_1 = remove_single_1_0(WE(1,:));
+    WE_male = WE(1,:);
+    WE_male(isnan(WE(1,:))) = 0;
+    WE_s_1 = remove_single_1_0(WE_male);
     WE_s_1 = remove_less_n_consecutive(WE_s_1, 5);
     [WE_s_1_ons,~] = ComputeOnsOffs(WE_s_1);
     WE_s_1_summary = size(WE_s_1_ons);
