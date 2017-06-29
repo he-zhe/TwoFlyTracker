@@ -8,6 +8,9 @@ jump = 40;
 
 rp_with_wings = regionprops(logical(fly_with_wings),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
 rp_body = regionprops(logical(fly_body),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
+rp_size = size(rp_body);
+rp_size = rp_size(1);
+
 
 if frame >1
     fly_apart_error_pre = fly_apart_error_s(1,frame-1);
@@ -26,15 +29,17 @@ end
         distant_wing_area_s(1, frame) = distant_wing_area(1);
         distant_wing_area_s(2, frame) = distant_wing_area(2);
         
-        posx(2,frame) = rp_body(2).Centroid(1);
-        posy(2,frame) = rp_body(2).Centroid(2);
-        orientation(2,frame) = -rp_body(2).Orientation;
-        area(2,frame) = rp_body(2).Area;
-        MajorAxis(2,frame) = rp_body(2).MajorAxisLength;
-        MinorAxis(2,frame) = rp_body(2).MinorAxisLength;
-        WE(2,frame) = WE_is(2);
-        distant_wing_area_s(3, frame) = distant_wing_area(3);
-        distant_wing_area_s(4, frame) = distant_wing_area(4);
+        if rp_size > 1
+            posx(2,frame) = rp_body(2).Centroid(1);
+            posy(2,frame) = rp_body(2).Centroid(2);
+            orientation(2,frame) = -rp_body(2).Orientation;
+            area(2,frame) = rp_body(2).Area;
+            MajorAxis(2,frame) = rp_body(2).MajorAxisLength;
+            MinorAxis(2,frame) = rp_body(2).MinorAxisLength;
+            WE(2,frame) = WE_is(2);
+            distant_wing_area_s(3, frame) = distant_wing_area(3);
+            distant_wing_area_s(4, frame) = distant_wing_area(4);
+        end
         
         collisions(frame) = collision;
         min_body_dist_s(frame) = min_body_dist;
