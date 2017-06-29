@@ -87,7 +87,7 @@ if length(rp_body) == 1 && ...
         && sum([rp_body.MajorAxisLength])< 1.5*max(initial_body_MajorAxisLength)...
         
     fly_apart_error = 1; %missing fly
-    fprintf('fly_apart: missing fly in frame %d\n',frame);
+%     fprintf('fly_apart: missing fly in frame %d\n',frame);
     min_body_dist = 0;
     %This part has been manually checked.
     return

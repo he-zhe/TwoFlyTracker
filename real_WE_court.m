@@ -34,6 +34,7 @@ for fi =1:length(allfiles)
     % dist = [];
     movie = VideoReader(moviefile);
     i = 1;
+    last = 0;
     while i <= sz
         if each_fly_WE(i) == 1
             count = 0;
@@ -47,30 +48,40 @@ for fi =1:length(allfiles)
             if count >5
 %                 disp(pdist([posx(WE_i, i), posy(WE_i, i);last_x,last_y]));
                 if pdist([posx(WE_i, i), posy(WE_i, i);last_x,last_y]) < 20
+                    disp('Close to last, record last result');
+                    if last == 1
+                        disp('Real WE recorded');
+                        real_WE(WE_i, i:walk-1) = 1;
+                    else
+                        disp('Not Real WE recorded');
+                    end
                     i = walk + 1;
                     continue;
                 end
 
                 while 1
-                    for fm = round(linspace(i, walk-1, 10))
+                    for fm = i: i + 5
                         ff = read(movie,fm);
                         ff_label = insertText(ff,[posx(WE_i, fm)-10, posy(WE_i, fm)-10],' ');
                         imshow(ff_label);
                     end
                     
-                    prompt = 'Replay:[R]    Not WE:[N]  Real WE:[Y]';
+                    prompt = 'Replay:[R]    Not WE:[N]    Real WE:[Y]: ';
                     
                     choice = input(prompt,'s');
                     
                     if isempty(choice) || choice == 'Y' || choice == 'y'
+                        disp('Real WE recorded')
                         real_WE(WE_i, i:walk-1) = 1;
-                        last_x = 0;
-                        last_y = 0;
+                        last_x = posx(WE_i, i);
+                        last_y = posy(WE_i, i);
+                        last = 1;
                         break;
                     elseif choice == 'N' || choice == 'n'
                         disp('Not real WE, posx,y recorded');
                         last_x = posx(WE_i, i);
                         last_y = posy(WE_i, i);
+                        last = 0;
                         break;
                     elseif choice == 'R' || choice == 'r'
                         continue;
