@@ -62,7 +62,7 @@ showimage;
         moviefigure = figure('Position',[150 250 900 600],'Name',titletext,'Toolbar','none','Menubar','none','NumberTitle','off','Resize','off','HandleVisibility','on','KeyPressFcn', @keyPress);
         f1 = figure('Position',[150 70 900 100],'Toolbar','none','Menubar','none','NumberTitle','off','Resize','on','HandleVisibility','on','KeyPressFcn', @keyPress);
         
-        framecontrol = uicontrol(f1,'Position',[53 45 550 20],'Style','slider','Value',startframe,'Min',7,'Max',nframes,'SliderStep',[1/nframes 10/nframes],'Callback',@framecallback);
+        framecontrol = uicontrol(f1,'Position',[53 45 550 20],'Style','slider','Value',startframe,'Min',1,'Max',nframes,'SliderStep',[1/nframes 10/nframes],'Callback',@framecallback);
         th(1)=uicontrol(f1,'Position',[1 45 50 20],'Style','text','String','frame #');
         
         framecontrol2 = uicontrol(f1,'Position',[383 5 60 20],'Style','edit','String',mat2str(frame),'Callback',@frame2callback);
