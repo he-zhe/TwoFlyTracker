@@ -10,7 +10,7 @@ else
     allfiles(1).name = allfiles_ori;
 end
 
-result_database={'File','Male_Mean_Speed','Female_Mean_speed','Mean_body_dist','# of Collisions','# of WE', 'First WE', 'is_Cop', 'First Cop', 'Total Time', '#agg','first_agg'};
+result_database={'File','Male_Mean_Speed','Female_Mean_speed','Mean_body_dist','# of Collisions','# of WE1', '# of WE2','First WE1', 'First WE2' 'is_Cop', 'First Cop', 'Total Time', '#agg','first_agg'};
 
 for fi =1:length(allfiles)
     
@@ -64,13 +64,39 @@ for fi =1:length(allfiles)
     WE_s_1_summary = size(WE_s_1_ons);
     WE_s_1_summary = WE_s_1_summary(1);
     
+    WE_female = WE(2,:);
+    WE_female(isnan(WE(2,:))) = 0;
+    WE_s_2 = remove_single_1_0(WE_female);
+    WE_s_2 = remove_less_n_consecutive(WE_s_2, 5);
+    [WE_s_2_ons,~] = ComputeOnsOffs(WE_s_2);
+    WE_s_2_summary = size(WE_s_2_ons);
+    WE_s_2_summary = WE_s_2_summary(1);
     
     sz_we = size(WE_s_1_ons);
     if sz_we(1)>0
-        first_WE = (WE_s_1_ons(1) - StartTracking)/fps;
+        first_WE_1 = (WE_s_1_ons(1) - StartTracking)/fps;
     else
-        first_WE = -1;
+        first_WE_1 = -1;
     end
+    
+    
+    sz_we = size(WE_s_2_ons);
+    if sz_we(1)>0
+        first_WE_2 = (WE_s_2_ons(1) - StartTracking)/fps;
+    else
+        first_WE_2 = -1;
+    end
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     cop = find(fly_apart_error_s == 99);
     is_cop = ~isempty(cop);
     % keyboard;
@@ -104,12 +130,14 @@ for fi =1:length(allfiles)
     result_database{addhere,4} = min_body_dist_summary;
     result_database{addhere,5} = collisions_summary;
     result_database{addhere,6} = WE_s_1_summary;
-    result_database{addhere,7} = first_WE;
-    result_database{addhere,8} = is_cop;
-    result_database{addhere,9} = first_cop;
-    result_database{addhere,10} = total_time;
-    result_database{addhere,11} = n_agg;
-    result_database{addhere,12} = first_agg;
+    result_database{addhere,7} = WE_s_2_summary;
+    result_database{addhere,8} = first_WE_1;
+    result_database{addhere,9} = first_WE_2;
+    result_database{addhere,10} = is_cop;
+    result_database{addhere,11} = first_cop;
+    result_database{addhere,12} = total_time;
+    result_database{addhere,13} = n_agg;
+    result_database{addhere,14} = first_agg;
     disp(allfiles(fi).name),disp('finished')
     
     clearvars -except allfiles fi result_database;
