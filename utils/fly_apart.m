@@ -99,6 +99,13 @@ if length(rp_body) == 1
     min_body_dist = 0;
 elseif length(rp_body) == 2
     min_body_dist = body_dist_appr(fly_body);
+    
+    if min_body_dist == -1
+        fly_apart_error = 1;
+        min_body_dist = 0;
+        return
+    end
+        
 end
 
     
@@ -232,12 +239,13 @@ else
     return
 end
 
-
-while length(rp_with_wing) == 1 && ~isempty(fly_with_wing)
+k = 25;
+while length(rp_with_wing) == 1 && ~isempty(fly_with_wing) && k>0
     fly_with_wing = fly_with_wing.*(~middle_region);
     fly_with_wing = bwareaopen(fly_with_wing,200);
     rp_with_wing = regionprops(logical(fly_with_wing),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
     middle_region = imdilate (middle_region,se_small);
+    k = k - 1;
 end
 
 

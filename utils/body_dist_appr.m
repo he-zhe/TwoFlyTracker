@@ -3,7 +3,11 @@ function [ min_body_dist_appr ] = body_dist_appr( flies_body )
 %   Detailed explanation goes here
 
     rp_body = regionprops(logical(flies_body),'Orientation','Centroid','Area','PixelList','MajorAxisLength','MinorAxisLength','BoundingBox','Image');
-
+    
+    if length(rp_body) ~= 2
+        min_body_dist_appr = -1;
+        return
+    end
     x1y1 = [rp_body(1).Centroid];
     x2y2 = [rp_body(2).Centroid];
     k = (x2y2(2)-x1y1(2))/(x2y2(1)-x1y1(1));
