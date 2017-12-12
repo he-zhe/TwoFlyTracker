@@ -20,6 +20,7 @@ for fi =1:length(allfiles)
     % loop through fly 1 and 2
     last_x = 0.0;
     last_y = 0.0;
+    last_WE = 0;
     for WE_i = 1:2
         each_fly_WE = WE(WE_i,:);
         sz = size(each_fly_WE);
@@ -46,35 +47,47 @@ for fi =1:length(allfiles)
                 
                 if count >5
                     disp(pdist([posx(WE_i, i), posy(WE_i, i);last_x,last_y]));
-                    if pdist([posx(WE_i, i), posy(WE_i, i);last_x,last_y]) < 20
+                    if pdist([posx(WE_i, i), posy(WE_i, i);last_x,last_y]) < 50
+                        real_WE(WE_i, i:walk-1) = last_WE;
                         i = walk + 1;
                         continue;
                     end
                     
+                    for fm = i:i+3
+                        ff = read(movie,fm);
+                        ff_label = insertText(ff,[posx(WE_i, fm)-10, posy(WE_i, fm)-10],'here');
+
+                        imshow(ff_label);
+                    end
+%                         prompt = 'Do you want to stop? Y/N [Y]: ';
+%                         if_stop = input(prompt,'s');
+%                         if isempty(if_stop) || if_stop == 'Y' || if_stop == 'y'
+%                             break;
+%                         end
+%                     end
+                    
                     while 1
-                        for fm = i:3:walk-1
-                            ff = read(movie,fm);
-                            ff_label = insertText(ff,[posx(WE_i, fm)-10, posy(WE_i, fm)-10],'here');
-                            
-                            imshow(ff_label);
-                        end
-                        prompt = 'Do you want to stop? Y/N [Y]: ';
-                        if_stop = input(prompt,'s');
-                        if isempty(if_stop) || if_stop == 'Y' || if_stop == 'y'
+                        prompt = 'Real / Not Real / Rewatch (Y/N/R) [Y]: ';
+                        if_real = input(prompt,'s');
+                        if strcmp(if_real,'Y') | strcmp(if_real,'Y') | strcmp(if_real,'')
+                            real_WE(WE_i, i:walk-1) = 1;
+                            last_WE = 1;
+                            last_x = posx(WE_i, i);
+                            last_y = posy(WE_i, i);
+                            break;
+                        elseif(if_real == 'R') | (if_real == 'r')
+                            for fm = i:i+3
+                                ff = read(movie,fm);
+                                ff_label = insertText(ff,[posx(WE_i, fm)-10, posy(WE_i, fm)-10],'here');
+                                imshow(ff_label);
+                            end
+                        else
+                            disp('Not real WE, posx,y recorded');
+                            last_WE = 0;
+                            last_x = posx(WE_i, i);
+                            last_y = posy(WE_i, i);
                             break;
                         end
-                    end
-                    
-                    prompt = 'Do you think this is real WE? Y/N [N]: ';
-                    if_real = input(prompt,'s');
-                    if (if_real == 'Y') | (if_real == 'y')
-                        real_WE(WE_i, i:walk-1) = 1;
-                        last_x = 0;
-                        last_y = 0;
-                    else
-                        disp('Not real WE, posx,y recorded');
-                        last_x = posx(WE_i, i);
-                        last_y = posy(WE_i, i);
                     end
                     
                     disp( [ 'You just watched frame No.' num2str( i )]);
