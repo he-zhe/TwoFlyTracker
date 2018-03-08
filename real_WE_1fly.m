@@ -15,12 +15,13 @@ for fi =1:length(allfiles)
     real_WE = zeros(size(WE));
     
     vnum = vnum + 1;
-    fprintf( 'This is video No.%d %s\n', vnum, allfiles(fi).name);
+    disp( 'This is video No.');
+    disp(vnum);
     % loop through fly 1 and 2
     last_x = 0.0;
     last_y = 0.0;
     last_WE = 0;
-    for WE_i = 1:2
+    for WE_i = 1:1
         each_fly_WE = WE(WE_i,:);
         sz = size(each_fly_WE);
         sz = sz(2);
@@ -64,9 +65,6 @@ for fi =1:length(allfiles)
 %                             break;
 %                         end
 %                     end
-
-                    disp( [ 'You just watched frame No.' num2str( i )]);
-                    disp(' ');
                     
                     while 1
                         prompt = 'Real / Not Real / Rewatch (Y/N/R) [Y]: ';
@@ -92,7 +90,8 @@ for fi =1:length(allfiles)
                         end
                     end
                     
-                    
+                    disp( [ 'You just watched frame No.' num2str( i )]);
+                    disp(' ');
                 end
                 i = walk + 1;
             else

@@ -218,7 +218,8 @@ skip=0;
         h =  get(movie,'Height');
         
         % working variables
-        nframes = get(movie,'NumberOfFrames');
+        % Some video cannot jump to the last frame
+        nframes = get(movie,'NumberOfFrames') - 5;
         
         CreateGUI;
         
