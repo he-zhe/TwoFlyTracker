@@ -4,7 +4,7 @@
 %   Use 'switch' button when male & female are detected inversely.
 function []  = manual_correction()
 
-allfiles_ori = uigetfile('*.mp4','MultiSelect','on');
+allfiles_ori = uigetfile('*.avi','MultiSelect','on');
 
 if ~ischar(allfiles_ori)
     allfiles = cell2struct(allfiles_ori,'name');

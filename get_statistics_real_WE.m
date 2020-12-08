@@ -25,13 +25,26 @@ for fi =1:length(allfiles)
     movie = VideoReader(moviefile);
     fps = get(movie, 'FrameRate');
     
+    cop = find(fly_apart_error_s == 99);
+    is_cop = ~isempty(cop);
+    % keyboard;
+    if is_cop
+        first_cop = (cop(1) - StartTracking)/fps;
+    else
+        first_cop = (StopTracking - StartTracking)/fps;
+    end
     
-    for frame = StartTracking+1:StopTracking
+    sumspeed = [0 0];
+    nan = [0 0];
+    
+    for frame = StartTracking+1:(first_cop * fps + StartTracking)
         for n = 1:2 %t  wo flies
             if ~isnan(posx(n,frame)) && ~isnan(posy(n,frame)) && ~isnan(posx(n,frame-1)) && ~isnan(posy(n,frame-1))
                 speed_s(n,frame) = pdist([posx(n,frame),posy(n,frame);posx(n,frame-1),posy(n,frame-1)],'euclidean');
+                sumspeed(n) = sumspeed(n) + speed_s(n, frame);
             else
                 speed_s(n,frame) = NaN;
+                nan(n) = nan(n) + 1;
             end
         end
     end
@@ -41,13 +54,16 @@ for fi =1:length(allfiles)
     norm_factor = 7.78/ROIs(3);
     
     % Convert speed from pixel/frame to pixel/sec
-    speed_s = speed_s*fps;
+    speed_s = speed_s*fps;    
     
+    % Append the speed_s variable to the _crrcted.mat file for the get_movie_WE
+    % function.
     
+    save(allfiles(fi).name,'speed_s','-append');
     
-    mean_speed_1_summary = nanmean(speed_s(1,:))*norm_factor;
+    mean_speed_1_summary = sumspeed(1) / (first_cop - nan(1)/20) *norm_factor;
     
-    mean_speed_2_summary = nanmean(speed_s(2,:))*norm_factor;
+    mean_speed_2_summary = sumspeed(2) / (first_cop - nan(2)/20) *norm_factor;
     
     min_body_dist_summary = nanmean(min_body_dist_s)*norm_factor;
     
@@ -90,16 +106,7 @@ for fi =1:length(allfiles)
     end
     
     
-    cop = find(fly_apart_error_s == 99);
-    is_cop = ~isempty(cop);
-    % keyboard;
-    if is_cop
-        first_cop = (cop(1) - StartTracking)/fps;
-        total_frame = cop(1) - StartTracking;
-    else
-        first_cop = (StopTracking - StartTracking)/fps;
-        total_frame = StopTracking - StartTracking;
-    end
+   
     
     total_time = (StopTracking - StartTracking)/fps;
     
@@ -134,7 +141,6 @@ for fi =1:length(allfiles)
     result_database{addhere,10} = first_WE_1;
     result_database{addhere,11} = first_WE_2;
     result_database{addhere,12} = total_time;
-    result_database{addhere,13} = total_frame;
     disp(allfiles(fi).name),disp('finished')
     
     clearvars -except allfiles fi result_database;

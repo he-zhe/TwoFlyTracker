@@ -64,7 +64,7 @@ th = []; % text handles, allowing rapid deletion
 %% choose files
 if nargin == 0
     source = cd;
-    allfiles = uigetfile('.mp4','MultiSelect','on'); % makes sure only avi files are chosen
+    allfiles = uigetfile('.avi','MultiSelect','on'); % makes sure only avi files are chosen
     if ~ischar(allfiles)
         % convert this into a useful format
         thesefiles = [];

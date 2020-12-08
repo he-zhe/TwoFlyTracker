@@ -1,5 +1,5 @@
 
-allfiles_ori = uigetfile('*.mat','MultiSelect','on');
+allfiles_ori = uigetfile('*crrcted.mat','MultiSelect','on');
 
 if ~ischar(allfiles_ori)
     allfiles = cell2struct(allfiles_ori,'name');
