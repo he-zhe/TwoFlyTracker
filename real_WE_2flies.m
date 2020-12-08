@@ -52,7 +52,7 @@ for fi =1:length(allfiles)
                         continue;
                     end
                     
-                    for fm = i:i+3
+                    for fm = i:i+10
                         ff = read(movie,fm);
                         ff_label = insertText(ff,[posx(WE_i, fm)-10, posy(WE_i, fm)-10],'here');
 
@@ -78,7 +78,7 @@ for fi =1:length(allfiles)
                             last_y = posy(WE_i, i);
                             break;
                         elseif(if_real == 'R') | (if_real == 'r')
-                            for fm = i:i+3
+                            for fm = i:i+10
                                 ff = read(movie,fm);
                                 ff_label = insertText(ff,[posx(WE_i, fm)-10, posy(WE_i, fm)-10],'here');
                                 imshow(ff_label);
